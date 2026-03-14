@@ -53,6 +53,28 @@ const Products = () => {
 
   const handleSearch = (e) => {
     e.preventDefault()
+    
+    // Check for #CategoryName shortcut
+    if (searchInput.startsWith('#')) {
+      const catName = searchInput.substring(1).trim().toLowerCase()
+      
+      if (catName === 'all') {
+        setSelectedCategory('')
+        setSearchInput('')
+        setSearchQuery('')
+        return
+      }
+
+      const match = categories.find(c => c.name.toLowerCase() === catName)
+      
+      if (match) {
+        setSelectedCategory(match._id)
+        setSearchInput('')
+        setSearchQuery('')
+        return
+      }
+    }
+    
     setSearchQuery(searchInput)
   }
 

@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const Category = require("../models/Category");
 const cloudinary = require("../config/cloudinary");
 
 // @desc    Create a new product
@@ -40,8 +41,17 @@ const getAllProducts = async (req, res) => {
 
     // Building the dynamic query
     let query = {};
-    if (req.query.search) {
-      query.name = { $regex: req.query.search, $options: "i" };
+    if (req.query.search && req.query.search.toLowerCase() !== "all") {
+      // Find categories that match the search term
+      const matchingCategories = await Category.find({
+        name: { $regex: req.query.search, $options: "i" }
+      });
+      const categoryIds = matchingCategories.map(cat => cat._id);
+
+      query.$or = [
+        { name: { $regex: req.query.search, $options: "i" } },
+        { category: { $in: categoryIds } }
+      ];
     }
     if (req.query.category) {
       query.category = req.query.category;
@@ -76,9 +86,21 @@ const searchProducts = async (req, res) => {
       return res.status(400).json({ message: "Search query is required" });
     }
 
-    const products = await Product.find({
-      name: { $regex: name, $options: "i" },
-    }).populate("category", "name");
+    let query = {};
+    if (name.toLowerCase() !== "all") {
+      // Find categories that match the search term
+      const matchingCategories = await Category.find({
+        name: { $regex: name, $options: "i" }
+      });
+      const categoryIds = matchingCategories.map(cat => cat._id);
+
+      query.$or = [
+        { name: { $regex: name, $options: "i" } },
+        { category: { $in: categoryIds } }
+      ];
+    }
+
+    const products = await Product.find(query).populate("category", "name");
 
     res.status(200).json(products);
   } catch (error) {
