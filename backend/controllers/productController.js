@@ -1,15 +1,19 @@
 const Product = require("../models/Product");
+const cloudinary = require("../config/cloudinary");
 
 // @desc    Create a new product
 // @route   POST /api/products
 // @access  Admin
 const createProduct = async (req, res) => {
   try {
-    const { name, description, price, stock, imageUrl, category } = req.body;
+    const { name, description, price, stock, category } = req.body;
 
     if (!name || !price || !category) {
       return res.status(400).json({ message: "Name, price, and category are required" });
     }
+
+    // Get image URL from Cloudinary upload (via multer middleware) or from body
+    const imageUrl = req.file ? req.file.path : req.body.imageUrl;
 
     const product = await Product.create({
       name,

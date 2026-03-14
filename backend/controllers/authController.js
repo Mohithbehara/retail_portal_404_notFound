@@ -1,12 +1,13 @@
 const jwt = require("jsonwebtoken");
+const env = require("../config/env");
 const User = require("../models/User");
-const { sendWelcomeEmail } = require("../services/emailService");
+const { sendWelcomeEmail } = require("../services/send-email");
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     // Check if all fields are provided
     if (!name || !email || !password) {
@@ -19,8 +20,11 @@ const register = async (req, res) => {
       return res.status(400).json({ message: "User already exists with this email" });
     }
 
+    // Determine the role to assign
+    const assignedRole = role === "admin" ? "admin" : "user";
+
     // Create user (password hashed in pre-save hook)
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, password, role: assignedRole });
 
     // Send welcome email
     await sendWelcomeEmail(user.email, user.name);
@@ -57,7 +61,7 @@ const login = async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
+      env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 

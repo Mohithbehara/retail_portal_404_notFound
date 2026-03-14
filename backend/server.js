@@ -1,10 +1,7 @@
 const express = require("express");
-const dotenv = require("dotenv");
 const cors = require("cors");
+const env = require("./config/env");
 const connectDB = require("./config/db");
-
-// Load environment variables
-dotenv.config();
 
 // Connect to database
 connectDB();
@@ -20,6 +17,7 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/categories", require("./routes/categoryRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/cart", require("./routes/cartRoutes"));
+app.use("/api/orders", require("./routes/orderRoutes"));
 
 // Health check route
 app.get("/", (req, res) => {
@@ -32,8 +30,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Something went wrong!", error: err.message });
 });
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(env.PORT, () => {
+  console.log(`Server running on port ${env.PORT}`);
 });
