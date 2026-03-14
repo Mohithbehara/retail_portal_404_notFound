@@ -9,6 +9,11 @@ on:
     branches: [ "main", "master" ]
     paths:
       - 'frontend/**'
+  workflow_dispatch:
+  pull_request:
+    branches: [ "main", "master" ]
+    paths:
+      - 'frontend/**'
 
 jobs:
   build:
