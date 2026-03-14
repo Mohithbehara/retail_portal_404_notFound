@@ -30,21 +30,30 @@ const createProduct = async (req, res) => {
   }
 };
 
-// @desc    Get all products (with pagination)
-// @route   GET /api/products?page=1&limit=10
+// @desc    Get all products (with pagination, search, and category filter)
+// @route   GET /api/products?page=1&limit=10&search=keyword&category=categoryId
 const getAllProducts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 12;
     const skip = (page - 1) * limit;
 
-    const products = await Product.find()
+    // Building the dynamic query
+    let query = {};
+    if (req.query.search) {
+      query.name = { $regex: req.query.search, $options: "i" };
+    }
+    if (req.query.category) {
+      query.category = req.query.category;
+    }
+
+    const products = await Product.find(query)
       .populate("category", "name")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const total = await Product.countDocuments();
+    const total = await Product.countDocuments(query);
 
     res.status(200).json({
       products,

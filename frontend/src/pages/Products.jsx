@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Search } from 'lucide-react'
-import { getAllProducts, searchProducts } from '@/services/productService'
+import { getAllProducts } from '@/services/productService'
 import { getAllCategories } from '@/services/categoryService'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -10,8 +10,9 @@ import CategoryFilter from '@/components/CategoryFilter'
 const Products = () => {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
-  const [selectedCategory, setSelectedCategory] = useState(null)
+  const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchInput, setSearchInput] = useState('')
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(true)
@@ -19,7 +20,7 @@ const Products = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true)
-      const res = await getAllProducts(page, 12)
+      const res = await getAllProducts(page, 12, searchQuery, selectedCategory)
       setProducts(res.data.products)
       setTotalPages(res.data.totalPages)
     } catch (err) {
@@ -39,26 +40,21 @@ const Products = () => {
   }
 
   useEffect(() => { fetchCategories() }, [])
-  useEffect(() => { if (!searchQuery) fetchProducts() }, [page, searchQuery])
+  
+  // Refetch when page, actual applied search query, or category filter changes
+  useEffect(() => { 
+    fetchProducts() 
+  }, [page, searchQuery, selectedCategory])
 
-  const handleSearch = async (e) => {
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1)
+  }, [searchQuery, selectedCategory])
+
+  const handleSearch = (e) => {
     e.preventDefault()
-    if (!searchQuery.trim()) { fetchProducts(); return }
-    try {
-      setLoading(true)
-      const res = await searchProducts(searchQuery)
-      setProducts(res.data)
-      setTotalPages(1)
-    } catch (err) {
-      console.error('Search failed', err)
-    } finally {
-      setLoading(false)
-    }
+    setSearchQuery(searchInput)
   }
-
-  const filteredProducts = selectedCategory
-    ? products.filter((p) => p.category?._id === selectedCategory)
-    : products
 
   return (
     <div className="container mx-auto px-4 py-10">
@@ -69,25 +65,25 @@ const Products = () => {
         </div>
         <form className="flex items-center gap-2 bg-secondary border border-border rounded-lg pl-3 pr-1 py-1 min-w-[280px] md:min-w-[320px] focus-within:ring-1 focus-within:ring-ring transition-all" onSubmit={handleSearch}>
           <Search size={18} className="text-muted-foreground flex-shrink-0" />
-          <Input className="border-0 bg-transparent shadow-none focus-visible:ring-0 h-8" placeholder="Search products..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+          <Input className="border-0 bg-transparent shadow-none focus-visible:ring-0 h-8" placeholder="Search products..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
           <Button type="submit" size="sm">Search</Button>
         </form>
       </div>
 
-      <CategoryFilter categories={categories} selected={selectedCategory} onSelect={setSelectedCategory} />
+      <CategoryFilter categories={categories} selected={selectedCategory} onSelect={(id) => setSelectedCategory(id || '')} />
 
       {loading ? (
         <div className="flex justify-center py-20"><div className="h-10 w-10 border-3 border-border border-t-primary rounded-full animate-spin" /></div>
-      ) : filteredProducts.length === 0 ? (
+      ) : products.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground text-lg">😕 No products found</div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-            {filteredProducts.map((product) => (
+            {products.map((product) => (
               <ProductCard key={product._id} product={product} />
             ))}
           </div>
-          {totalPages > 1 && !searchQuery && (
+          {totalPages > 1 && (
             <div className="flex items-center justify-center gap-4 mt-10">
               <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button>
               <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>

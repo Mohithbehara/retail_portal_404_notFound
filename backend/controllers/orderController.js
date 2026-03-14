@@ -82,6 +82,22 @@ const placeOrder = async (req, res) => {
   }
 };
 
+// @desc    Get logged in user's orders
+// @route   GET /api/orders
+// @access  Private
+const getUserOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.user._id })
+      .populate("items.product", "name price imageUrl")
+      .sort({ createdAt: -1 });
+      
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 module.exports = {
   placeOrder,
+  getUserOrders,
 };

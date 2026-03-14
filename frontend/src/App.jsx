@@ -9,6 +9,7 @@ import Products from '@/pages/Products'
 import ProductDetail from '@/pages/ProductDetail'
 import Cart from '@/pages/Cart'
 import AdminDashboard from '@/pages/AdminDashboard'
+import Orders from '@/pages/Orders'
 import NotFound from '@/pages/NotFound'
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+          <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
