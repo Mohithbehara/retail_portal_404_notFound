@@ -11,6 +11,91 @@ const HomePage = () => {
   const [cart, setCart] = useState([]);
   const { user, logout } = useAuth();
 
+  // --- ADMIN STATE & LOGIC ---
+  const [categories, setCategories] = useState([
+    "All",
+    "Pizza",
+    "Drinks",
+    "Breads",
+  ]);
+
+  const [products, setProducts] = useState([
+    {
+      id: 1,
+      title: "Margherita Pizza",
+      price: "299",
+      category: "Pizza",
+      icon: "🍕",
+    },
+    { id: 2, title: "Coca Cola", price: "45", category: "Drinks", icon: "🥤" },
+    {
+      id: 3,
+      title: "Garlic Bread",
+      price: "99",
+      category: "Breads",
+      icon: "🥖",
+    },
+    {
+      id: 4,
+      title: "Pepperoni Feast",
+      price: "499",
+      category: "Pizza",
+      icon: "🍕",
+    },
+    { id: 5, title: "Iced Tea", price: "60", category: "Drinks", icon: "🍹" },
+    {
+      id: 6,
+      title: "Cheese Sticks",
+      price: "120",
+      category: "Breads",
+      icon: "🧀",
+    },
+  ]);
+
+  const addCategory = () => {
+    const name = prompt("Enter new category name:");
+    if (name && !categories.includes(name)) {
+      setCategories([...categories, name]);
+    }
+  };
+
+  const addProduct = () => {
+    const title = prompt("Product Name:");
+    const price = prompt("Price (INR):");
+    const category = prompt("Category (e.g. Pizza, Drinks):", "Pizza");
+    if (title && price) {
+      const newProduct = {
+        id: Date.now(),
+        title,
+        price,
+        category,
+        icon: "📦",
+      };
+      setProducts([newProduct, ...products]);
+    }
+  };
+
+  const deleteProduct = (id) => {
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      setProducts(products.filter((p) => p.id !== id));
+      setCart(cart.filter((item) => item.id !== id));
+    }
+  };
+
+  const editProduct = (id) => {
+    const product = products.find((p) => p.id === id);
+    const newTitle = prompt("Edit Title:", product.title);
+    const newPrice = prompt("Edit Price:", product.price);
+    if (newTitle && newPrice) {
+      setProducts(
+        products.map((p) =>
+          p.id === id ? { ...p, title: newTitle, price: newPrice } : p,
+        ),
+      );
+    }
+  };
+
+  // --- AUTH & CART LOGIC ---
   const openAuth = (mode) => {
     setAuthMode(mode);
     setShowAuth(true);
@@ -18,14 +103,14 @@ const HomePage = () => {
 
   const handleCheckout = () => {
     if (!user) {
-      // If user is not logged in: Close cart and open Login popup
       setIsCartOpen(false);
       openAuth("login");
       alert("Please login to proceed with checkout");
     } else {
-      // If user is logged in: Simulate order placement
-      alert(`Order Placed Successfully for ${user.email}!`);
-      setCart([]); // Clear the cart after success
+      // Safely access email or fallback to 'User'
+      const displayName = user?.email || "Valued Customer";
+      alert(`Order Placed Successfully for ${displayName}!`);
+      setCart([]);
       setIsCartOpen(false);
     }
   };
@@ -57,7 +142,6 @@ const HomePage = () => {
     });
   };
 
-  // Calculate Total Price
   const totalPrice = cart
     .reduce((acc, item) => acc + parseFloat(item.price) * item.quantity, 0)
     .toFixed(2);
@@ -80,8 +164,12 @@ const HomePage = () => {
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
               <span>
-                Welcome, <strong>{user.email.split("@")[0]}</strong> (
-                {user.role})
+                Welcome,{" "}
+                <strong>
+                  {/* Safely handle cases where email might be missing */}
+                  {user?.email ? user.email.split("@")[0] : "Admin"}
+                </strong>{" "}
+                ({user?.role})
               </span>
               <button className="login-btn" onClick={logout}>
                 Logout
@@ -93,6 +181,12 @@ const HomePage = () => {
 
       {/* Main Product Listing */}
       <ProductList
+        products={products}
+        categories={categories}
+        onAddCategory={addCategory}
+        onAddProduct={addProduct}
+        onDeleteProduct={deleteProduct}
+        onEditProduct={editProduct}
         onAddToCart={addToCart}
         onRemoveFromCart={removeFromCart}
         cart={cart}
@@ -117,7 +211,6 @@ const HomePage = () => {
               ✕
             </button>
           </div>
-
           <div className="cart-items">
             {cart.length === 0 ? (
               <p
@@ -130,77 +223,49 @@ const HomePage = () => {
                 Cart is empty
               </p>
             ) : (
-              cart.map((item) => {
-                const lineTotal = (
-                  parseFloat(item.price) * item.quantity
-                ).toFixed(2);
-
-                return (
-                  <div
-                    key={item.id}
-                    className="cart-item"
-                    style={{ alignItems: "center", marginBottom: "15px" }}
-                  >
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: "600" }}>
-                        {item.icon} {item.title}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "0.85rem",
-                          color: "#ff8200",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        ₹{lineTotal}
-                        <span
-                          style={{
-                            color: "#999",
-                            fontWeight: "normal",
-                            marginLeft: "5px",
-                          }}
-                        >
-                          (₹{item.price} x {item.quantity})
-                        </span>
-                      </div>
+              cart.map((item) => (
+                <div
+                  key={item.id}
+                  className="cart-item"
+                  style={{ alignItems: "center", marginBottom: "15px" }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: "600" }}>
+                      {item.icon} {item.title}
                     </div>
-
                     <div
-                      className="quantity-controls"
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
+                        fontSize: "0.85rem",
+                        color: "#ff8200",
+                        fontWeight: "bold",
                       }}
                     >
-                      <button
-                        className="qty-btn"
-                        onClick={() => removeFromCart(item.id)}
-                      >
-                        -
-                      </button>
-                      <span
-                        style={{
-                          fontWeight: "bold",
-                          minWidth: "20px",
-                          textAlign: "center",
-                        }}
-                      >
-                        {item.quantity}
-                      </span>
-                      <button
-                        className="qty-btn"
-                        onClick={() => addToCart(item)}
-                      >
-                        +
-                      </button>
+                      ₹{(item.price * item.quantity).toFixed(2)}
                     </div>
                   </div>
-                );
-              })
+                  <div
+                    className="quantity-controls"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}
+                  >
+                    <button
+                      className="qty-btn"
+                      onClick={() => removeFromCart(item.id)}
+                    >
+                      -
+                    </button>
+                    <span>{item.quantity}</span>
+                    <button className="qty-btn" onClick={() => addToCart(item)}>
+                      +
+                    </button>
+                  </div>
+                </div>
+              ))
             )}
           </div>
-
           <div className="cart-footer">
             <div
               style={{

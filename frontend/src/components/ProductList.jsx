@@ -2,40 +2,22 @@ import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import "./Product.css";
 
-const MOCK_PRODUCTS = [
-  {
-    id: 1,
-    title: "Margherita Pizza",
-    price: "299",
-    category: "Pizza",
-    icon: "🍕",
-  },
-  { id: 2, title: "Coca Cola", price: "45", category: "Drinks", icon: "🥤" },
-  { id: 3, title: "Garlic Bread", price: "99", category: "Breads", icon: "🥖" },
-  {
-    id: 4,
-    title: "Pepperoni Feast",
-    price: "499",
-    category: "Pizza",
-    icon: "🍕",
-  },
-  { id: 5, title: "Iced Tea", price: "60", category: "Drinks", icon: "🍹" },
-  {
-    id: 6,
-    title: "Cheese Sticks",
-    price: "120",
-    category: "Breads",
-    icon: "🧀",
-  },
-];
-
-// Added onRemoveFromCart and cart props
-const ProductList = ({ onAddToCart, onRemoveFromCart, cart }) => {
+const ProductList = ({
+  products,
+  categories,
+  onAddCategory,
+  onAddProduct,
+  onDeleteProduct,
+  onEditProduct,
+  onAddToCart,
+  onRemoveFromCart,
+  cart,
+}) => {
   const { user } = useAuth();
-  const [visibleCount, setVisibleCount] = useState(4); // Lazy loading state
+  const [visibleCount, setVisibleCount] = useState(4);
   const [filter, setFilter] = useState("All");
 
-  const filteredProducts = MOCK_PRODUCTS.filter(
+  const filteredProducts = products.filter(
     (p) => filter === "All" || p.category === filter,
   );
 
@@ -44,7 +26,7 @@ const ProductList = ({ onAddToCart, onRemoveFromCart, cart }) => {
   return (
     <div className="product-section">
       <div className="category-bar">
-        {["All", "Pizza", "Drinks", "Breads"].map((cat) => (
+        {categories.map((cat) => (
           <div
             key={cat}
             className={`category-chip ${filter === cat ? "active" : ""}`}
@@ -53,11 +35,24 @@ const ProductList = ({ onAddToCart, onRemoveFromCart, cart }) => {
             {cat}
           </div>
         ))}
+        {/* Admin Category Add Button */}
+        {user?.role === "Admin" && (
+          <button className="add-cat-btn" onClick={onAddCategory}>
+            +
+          </button>
+        )}
       </div>
 
       <div className="product-grid">
+        {/* Admin "Add Product" placeholder shown at the start */}
+        {user?.role === "Admin" && (
+          <div className="product-card admin-add-card" onClick={onAddProduct}>
+            <div className="admin-add-icon">+</div>
+            <p>Add New Product</p>
+          </div>
+        )}
+
         {filteredProducts.slice(0, visibleCount).map((product) => {
-          // Check if product exists in cart to get current quantity
           const cartItem = cart.find((item) => item.id === product.id);
           const quantity = cartItem ? cartItem.quantity : 0;
 
@@ -69,7 +64,6 @@ const ProductList = ({ onAddToCart, onRemoveFromCart, cart }) => {
                 <p className="product-price">₹{product.price}</p>
 
                 <div className="action-btns">
-                  {/* QUANTITY LOGIC: Show +/- if in cart, otherwise show Add to Cart */}
                   {quantity === 0 ? (
                     <button
                       className="btn-add"
@@ -95,18 +89,18 @@ const ProductList = ({ onAddToCart, onRemoveFromCart, cart }) => {
                     </div>
                   )}
 
-                  {/* ROLE BASED MODEL: Admin Controls */}
+                  {/* Functional Admin Actions */}
                   {user?.role === "Admin" && (
                     <div className="admin-actions">
                       <button
                         className="btn-admin"
-                        onClick={() => alert("Edit Mode")}
+                        onClick={() => onEditProduct(product.id)}
                       >
                         Edit
                       </button>
                       <button
                         className="btn-admin del"
-                        onClick={() => alert("Delete")}
+                        onClick={() => onDeleteProduct(product.id)}
                       >
                         Del
                       </button>
