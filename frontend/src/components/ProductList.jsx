@@ -6,30 +6,24 @@ const MOCK_PRODUCTS = [
   {
     id: 1,
     title: "Margherita Pizza",
-    price: "12.99",
+    price: "299",
     category: "Pizza",
     icon: "🍕",
   },
-  { id: 2, title: "Coca Cola", price: "2.50", category: "Drinks", icon: "🥤" },
-  {
-    id: 3,
-    title: "Garlic Bread",
-    price: "5.00",
-    category: "Breads",
-    icon: "🥖",
-  },
+  { id: 2, title: "Coca Cola", price: "45", category: "Drinks", icon: "🥤" },
+  { id: 3, title: "Garlic Bread", price: "99", category: "Breads", icon: "🥖" },
   {
     id: 4,
     title: "Pepperoni Feast",
-    price: "15.99",
+    price: "499",
     category: "Pizza",
     icon: "🍕",
   },
-  { id: 5, title: "Iced Tea", price: "3.00", category: "Drinks", icon: "🍹" },
+  { id: 5, title: "Iced Tea", price: "60", category: "Drinks", icon: "🍹" },
   {
     id: 6,
     title: "Cheese Sticks",
-    price: "6.50",
+    price: "120",
     category: "Breads",
     icon: "🧀",
   },
@@ -72,7 +66,7 @@ const ProductList = ({ onAddToCart, onRemoveFromCart, cart }) => {
               <div className="product-image">{product.icon}</div>
               <div className="product-info">
                 <h3>{product.title}</h3>
-                <p className="product-price">${product.price}</p>
+                <p className="product-price">₹{product.price}</p>
 
                 <div className="action-btns">
                   {/* QUANTITY LOGIC: Show +/- if in cart, otherwise show Add to Cart */}

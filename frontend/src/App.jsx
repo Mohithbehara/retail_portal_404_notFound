@@ -18,15 +18,15 @@ const HomePage = () => {
 
   const handleCheckout = () => {
     if (!user) {
-      // If user is not logged in:
-      setIsCartOpen(false); // Close the cart popup
-      openAuth("login"); // Open the login modal
+      // If user is not logged in: Close cart and open Login popup
+      setIsCartOpen(false);
+      openAuth("login");
       alert("Please login to proceed with checkout");
     } else {
-      // If user is logged in:
+      // If user is logged in: Simulate order placement
       alert(`Order Placed Successfully for ${user.email}!`);
       setCart([]); // Clear the cart after success
-      setIsCartOpen(false); // Close the cart
+      setIsCartOpen(false);
     }
   };
 
@@ -57,6 +57,7 @@ const HomePage = () => {
     });
   };
 
+  // Calculate Total Price
   const totalPrice = cart
     .reduce((acc, item) => acc + parseFloat(item.price) * item.quantity, 0)
     .toFixed(2);
@@ -79,7 +80,8 @@ const HomePage = () => {
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
               <span>
-                Welcome, <strong>{user.email}</strong> ({user.role})
+                Welcome, <strong>{user.email.split("@")[0]}</strong> (
+                {user.role})
               </span>
               <button className="login-btn" onClick={logout}>
                 Logout
@@ -129,7 +131,6 @@ const HomePage = () => {
               </p>
             ) : (
               cart.map((item) => {
-                // Logic Fix: Calculate line item total
                 const lineTotal = (
                   parseFloat(item.price) * item.quantity
                 ).toFixed(2);
@@ -151,7 +152,7 @@ const HomePage = () => {
                           fontWeight: "bold",
                         }}
                       >
-                        ${lineTotal}
+                        ₹{lineTotal}
                         <span
                           style={{
                             color: "#999",
@@ -159,7 +160,7 @@ const HomePage = () => {
                             marginLeft: "5px",
                           }}
                         >
-                          (${item.price} x {item.quantity})
+                          (₹{item.price} x {item.quantity})
                         </span>
                       </div>
                     </div>
@@ -210,7 +211,7 @@ const HomePage = () => {
             >
               <strong>Total:</strong>
               <strong style={{ fontSize: "1.2rem", color: "#ff8200" }}>
-                ${totalPrice}
+                ₹{totalPrice}
               </strong>
             </div>
             <button className="checkout-btn" onClick={handleCheckout}>
