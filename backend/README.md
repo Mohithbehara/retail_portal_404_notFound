@@ -228,9 +228,11 @@ Get your token by calling the **Login** endpoint.
 
 ---
 
-#### `GET /api/products` — Get all products *(Paginated)*
+#### `GET /api/products` — Get all products *(Paginated & Filterable)*
 
-**Query params:** `?page=1&limit=10`
+**Query params:** 
+- `?page=1&limit=10`
+- `?category=CATEGORY_ID` (Filter by a specific category)
 
 **Response** `200`:
 ```json
@@ -342,6 +344,29 @@ Get your token by calling the **Login** endpoint.
 
 ---
 
+### 📦 Orders — `/api/orders` *(Auth required)*
+
+#### `POST /api/orders` — Place a "Cash on Delivery" order
+**Body:**
+```json
+{
+  "shippingAddress": "123 Street, City, Country"
+}
+```
+**Response** `201`:
+```json
+{
+  "message": "Order placed successfully",
+  "order": { ... }
+}
+```
+> Email notifications are sent to the customer (confirmation) and admin (new order/low stock).
+
+#### `GET /api/orders` — Get user's order history
+**Response** `200`: Returns an array of user's past orders.
+
+---
+
 ## 🧪 Postman Testing Flow
 
 Test the APIs in this recommended order:
@@ -421,6 +446,17 @@ All endpoints return errors in a consistent format:
 | `500` | Server error |
 
 ---
+
+## 🚀 CI/CD & Deployment
+
+### GitHub Actions
+The project includes automated CI workflows located in `.github/workflows/`:
+- **Backend CI**: Runs on every push to `backend/**`. Includes dependency installation and build verification.
+
+### Deployment
+- **Backend (Render)**: Deployed as a Web Service.
+- **Frontend (Vercel)**: Deployed as a Static Site.
+For detailed steps, refer to `deployment_guide.md` in the root (if available) or repository documentation.
 
 ## 👥 Team — 404 Not Found
 
